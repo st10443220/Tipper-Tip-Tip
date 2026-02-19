@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.TextView
 import android.widget.EditText
 import android.widget.Button
+import android.widget.SeekBar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -20,20 +21,40 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val button = findViewById<Button>(R.id.button)
         val totalView = findViewById<EditText>(R.id.totalView)
-        val tipView = findViewById<TextView>(R.id.tipView)
+        val tipSeekBar = findViewById<SeekBar>(R.id.tipSeekBar)
+        val labelTipPercent = findViewById<TextView>(R.id.labelTipPercent)
+        val peopleView = findViewById<EditText>(R.id.peopleView)
+        val button = findViewById<Button>(R.id.button)
+        val resultsView = findViewById<TextView>(R.id.resultsView)
+
+        tipSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                labelTipPercent.text = "Tip: $progress%"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
         button.setOnClickListener {
-            val total = totalView.text.toString().toDoubleOrNull()
+            val billTotal = totalView.text.toString().toDoubleOrNull()
+            val peopleCount = peopleView.text.toString().toIntOrNull() ?: 1
 
-            if (total != null) {
-                val tipPercent = 0.1
-                val tip = total * tipPercent
+            if (billTotal != null) {
+                val tipPercentage = tipSeekBar.progress / 100.0
 
-                tipView.text = (String.format("%.0f", tip))
+                val totalTip = billTotal * tipPercentage
+                val grandTotal = billTotal + totalTip
+                val amountPerPerson = grandTotal / peopleCount
+
+                resultsView.text = """
+                    Tip: R ${String.format("%.2f", totalTip)}
+                    Total: R ${String.format("%.2f", grandTotal)}
+                    Per Person: R ${String.format("%.2f", amountPerPerson)}
+                """.trimIndent()
             } else {
-                tipView.text = ""
+                resultsView.text = "Please enter a valid bill amount"
             }
         }
     }
